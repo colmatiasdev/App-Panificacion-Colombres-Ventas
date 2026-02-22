@@ -5,8 +5,8 @@
  *
  * Tablas definidas:
  * - PRODUCTOS: PK ID-PRODUCTO. Columnas: ID-PRODUCTO, CATEGORIA, NOMBRE-PRODUCTO, PRECIO, HABILITADO
- * - ENERO: PK ID-VENTA. Columnas: ID-VENTA, FECHA_OPERATIVA, HORA, ID-PRODUCTO, CATEGORIA, PRODUCTO, MONTO
- * Agregar más tablas en TABLAS cuando se creen nuevas hojas.
+ * - ENERO (y meses): PK ID-VENTA. Columnas: ID-VENTA, FECHA_OPERATIVA, HORA, ID-PRODUCTO, CATEGORIA, PRODUCTO, MONTO
+ * - RESUMEN-VENTAS: PK MES. Columnas: MES, CATEGORIA, NOMBRE-PRODUCTO, CANTIDAD, MONTO. Acciones: resumenAlta, resumenBaja, resumenModificacion, resumenLeer
  */
 
 /** ID del Google Sheet. Poner solo el ID (ej: 1R05n3t2cgmzX-z58b9Sgx4He9k9Y9NAm9myQXbEwv3Q) o la URL completa. */
@@ -23,6 +23,11 @@ var TABLAS = {
     sheet: 'ENERO',
     pk: 'ID-VENTA',
     columns: ['ID-VENTA', 'FECHA_OPERATIVA', 'HORA', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'MONTO']
+  },
+  RESUMEN_VENTAS: {
+    sheet: 'RESUMEN-VENTAS',
+    pk: 'MES',
+    columns: ['MES', 'CATEGORIA', 'NOMBRE-PRODUCTO', 'CANTIDAD', 'MONTO']
   }
 };
 
@@ -45,6 +50,10 @@ function doPost(e) {
       case 'ventaBaja':         return ventaBaja(params);
       case 'ventaModificacion': return ventaModificacion(params);
       case 'ventaLeer':         return ventaLeer(params);
+      case 'resumenAlta':       return resumenAlta(params);
+      case 'resumenBaja':       return resumenBaja(params);
+      case 'resumenModificacion': return resumenModificacion(params);
+      case 'resumenLeer':       return resumenLeer(params);
       default:
         return respuestaJson({ ok: false, error: 'Acción no reconocida: ' + accion });
     }
@@ -272,6 +281,98 @@ function ventaLeer(params) {
     filas.push(obj);
   }
   if (idVenta) filas = filas.filter(function (f) { return String(f['ID-VENTA']) === String(idVenta); });
+  return respuestaJson({ ok: true, datos: filas });
+}
+
+// --- RESUMEN-VENTAS ---
+
+function resumenAlta(params) {
+  var def = TABLAS.RESUMEN_VENTAS;
+  var dato = params.dato || params;
+  if (!dato.MES) return respuestaJson({ ok: false, error: 'Falta MES.' });
+  var ss = getSS();
+  var sheet = getHoja(ss, def.sheet, def.columns);
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, def.columns.length).setValues([def.columns]);
+    sheet.getRange(1, 1, 1, def.columns.length).setFontWeight('bold');
+  }
+  var fila = [dato.MES || '', dato.CATEGORIA || '', dato['NOMBRE-PRODUCTO'] || '', dato.CANTIDAD !== undefined ? dato.CANTIDAD : '', dato.MONTO !== undefined ? dato.MONTO : ''];
+  sheet.appendRow(fila);
+  return respuestaJson({ ok: true, mensaje: 'Resumen dado de alta.' });
+}
+
+function resumenBaja(params) {
+  var def = TABLAS.RESUMEN_VENTAS;
+  var mes = params.MES || params.mes;
+  var categoria = params.CATEGORIA;
+  var nombreProducto = params['NOMBRE-PRODUCTO'] || params.nombreProducto;
+  if (!mes) return respuestaJson({ ok: false, error: 'Falta MES.' });
+  var ss = getSS();
+  var sheet = ss.getSheetByName(def.sheet);
+  if (!sheet) return respuestaJson({ ok: false, error: 'No existe la hoja ' + def.sheet });
+  var datos = sheet.getDataRange().getValues();
+  if (datos.length < 2) return respuestaJson({ ok: true, mensaje: 'Nada que borrar.' });
+  var headers = datos[0];
+  var colMes = headers.indexOf('MES');
+  var colCat = headers.indexOf('CATEGORIA');
+  var colNom = headers.indexOf('NOMBRE-PRODUCTO');
+  var filasABorrar = [];
+  for (var i = 1; i < datos.length; i++) {
+    var coincide = String(datos[i][colMes]) === String(mes);
+    if (categoria != null && categoria !== '') coincide = coincide && String(datos[i][colCat]) === String(categoria);
+    if (nombreProducto != null && nombreProducto !== '') coincide = coincide && String(datos[i][colNom]) === String(nombreProducto);
+    if (coincide) filasABorrar.push(i + 1);
+  }
+  for (var j = filasABorrar.length - 1; j >= 0; j--) sheet.deleteRow(filasABorrar[j]);
+  return respuestaJson({ ok: true, mensaje: 'Resumen dado de baja.', filasBorradas: filasABorrar.length });
+}
+
+function resumenModificacion(params) {
+  var def = TABLAS.RESUMEN_VENTAS;
+  var dato = params.dato || params;
+  if (!dato.MES) return respuestaJson({ ok: false, error: 'Falta MES.' });
+  var ss = getSS();
+  var sheet = ss.getSheetByName(def.sheet);
+  if (!sheet) return respuestaJson({ ok: false, error: 'No existe la hoja ' + def.sheet });
+  var datos = sheet.getDataRange().getValues();
+  var headers = datos[0];
+  var colMes = headers.indexOf('MES');
+  var colCat = headers.indexOf('CATEGORIA');
+  var colNom = headers.indexOf('NOMBRE-PRODUCTO');
+  for (var i = 1; i < datos.length; i++) {
+    if (String(datos[i][colMes]) === String(dato.MES) &&
+        (dato.CATEGORIA == null || String(datos[i][colCat]) === String(dato.CATEGORIA)) &&
+        (dato['NOMBRE-PRODUCTO'] == null || String(datos[i][colNom]) === String(dato['NOMBRE-PRODUCTO']))) {
+      var fila = [
+        dato.MES !== undefined ? dato.MES : datos[i][0],
+        dato.CATEGORIA !== undefined ? dato.CATEGORIA : datos[i][1],
+        dato['NOMBRE-PRODUCTO'] !== undefined ? dato['NOMBRE-PRODUCTO'] : datos[i][2],
+        dato.CANTIDAD !== undefined ? dato.CANTIDAD : datos[i][3],
+        dato.MONTO !== undefined ? dato.MONTO : datos[i][4]
+      ];
+      sheet.getRange(i + 1, 1, i + 1, def.columns.length).setValues([fila]);
+      return respuestaJson({ ok: true, mensaje: 'Resumen actualizado.' });
+    }
+  }
+  return respuestaJson({ ok: false, error: 'No encontrado.' });
+}
+
+function resumenLeer(params) {
+  var def = TABLAS.RESUMEN_VENTAS;
+  var mes = params.MES || params.mes;
+  var ss = getSS();
+  var sheet = ss.getSheetByName(def.sheet);
+  if (!sheet) return respuestaJson({ ok: true, datos: [] });
+  var datos = sheet.getDataRange().getValues();
+  if (datos.length < 2) return respuestaJson({ ok: true, datos: [] });
+  var headers = datos[0];
+  var filas = [];
+  for (var i = 1; i < datos.length; i++) {
+    var obj = {};
+    for (var c = 0; c < headers.length; c++) obj[headers[c]] = datos[i][c];
+    filas.push(obj);
+  }
+  if (mes) filas = filas.filter(function (f) { return String(f.MES) === String(mes); });
   return respuestaJson({ ok: true, datos: filas });
 }
 
