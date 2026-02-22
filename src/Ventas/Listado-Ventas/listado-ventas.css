@@ -1,4 +1,8 @@
-/* Listado de ventas */
+/* Listado de ventas - en esta página no se muestra el menú de navegación */
+.header--no-nav .nav {
+  display: none !important;
+}
+
 .listado-ventas__filtro {
   display: flex;
   flex-wrap: wrap;

@@ -1,4 +1,8 @@
-/* Seleccionar cliente */
+/* Seleccionar cliente - en esta página no se muestra el menú de navegación */
+.header--no-nav .nav {
+  display: none !important;
+}
+
 .seleccionar-cliente__intro {
   color: var(--color-text-muted);
   font-size: 0.95rem;

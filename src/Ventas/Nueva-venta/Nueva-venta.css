@@ -1,4 +1,9 @@
-/* Módulo Nueva venta - listado y resumen */
+/* Módulo Nueva venta - en esta página no se muestra el menú de navegación */
+.header--no-nav .nav {
+  display: none !important;
+}
+
+/* Listado y resumen */
 .page-header .nueva-venta__cliente-info {
   margin-top: 0.75rem;
   font-size: 0.95rem;
