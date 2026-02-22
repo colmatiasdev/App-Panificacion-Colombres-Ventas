@@ -15,6 +15,8 @@
     'MES',
     'FECHA_OPERATIVA',
     'HORA',
+    'NOMBRE-APELLIDO',
+    'TIPO-LISTA-PRECIO',
     'ID-VENTA',
     'ID-PRODUCTO',
     'CATEGORIA',

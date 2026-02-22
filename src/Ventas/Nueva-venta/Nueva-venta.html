@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nueva venta - EL TOTI Sandwicheria</title>
+  <title>Nueva venta - Panificacion Colombres</title>
   <link rel="stylesheet" href="../../../index.css">
   <link rel="stylesheet" href="../../Footer/footer.css">
   <link rel="stylesheet" href="Nueva-venta.css">
@@ -11,7 +11,7 @@
 <body>
   <header class="header">
     <div class="header__logo">
-      <h1>EL TOTI Sandwicheria</h1>
+      <h1>Panificacion Colombres</h1>
       <span class="header__subtitle">Sistema de Ventas</span>
     </div>
     <nav class="nav">
@@ -70,6 +70,16 @@
             </tr>
           </tfoot>
         </table>
+        <div class="nueva-venta__cliente">
+          <label for="nueva-venta-cliente">Cliente (nombre y apellido)</label>
+          <input type="text" id="nueva-venta-cliente" class="nueva-venta__input" placeholder="Opcional">
+          <label for="nueva-venta-tipo-lista">Tipo lista de precio</label>
+          <select id="nueva-venta-tipo-lista" class="nueva-venta__select">
+            <option value="">—</option>
+            <option value="Mayorista">Mayorista</option>
+            <option value="Distribuidor">Distribuidor</option>
+          </select>
+        </div>
         <div class="nueva-venta__guardar">
           <button type="button" class="nueva-venta__btn-guardar" id="nueva-venta-btn-guardar" disabled>Guardar venta</button>
           <span class="nueva-venta__guardar-msg" id="nueva-venta-guardar-msg"></span>

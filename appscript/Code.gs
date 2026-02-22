@@ -4,8 +4,9 @@
  * URL de despliegue → config.js APP_SCRIPT_URL.
  *
  * Tablas definidas:
- * - PRODUCTOS: PK ID-PRODUCTO. Columnas: ID-PRODUCTO, CATEGORIA, NOMBRE-PRODUCTO, PRECIO, HABILITADO
- * - ENERO (y meses): PK ID-VENTA. Columnas: ID-VENTA, AÑO, FECHA_OPERATIVA, HORA, ID-PRODUCTO, CATEGORIA, PRODUCTO, CANTIDAD, PRECIO, MONTO
+ * - CLIENTES: PK ID-CLIENTE. Columnas: ID-CLIENTE, NOMBRE-APELLIDO, TIPO-LISTA-PRECIO, WHATSAPP, OBSERVACION, HABILITADO
+ * - PRODUCTOS: PK ID-PRODUCTO. Columnas: ID-PRODUCTO, CATEGORIA, NOMBRE-PRODUCTO, PRECIO-MAYORISTA, PRECIO-DISTRIBUIDOR, HABILITADO
+ * - ENERO (y meses): PK ID-VENTA. Columnas: ID-VENTA, AÑO, FECHA_OPERATIVA, HORA, NOMBRE-APELLIDO, TIPO-LISTA-PRECIO, ID-PRODUCTO, CATEGORIA, PRODUCTO, CANTIDAD, PRECIO, MONTO
  * - RESUMEN-VENTAS: PK MES. Columnas: MES, DIA, CATEGORIA, NOMBRE-PRODUCTO, CANTIDAD, MONTO. Acciones: resumenAlta, resumenBaja, resumenModificacion, resumenLeer
  */
 
@@ -14,16 +15,32 @@ var SPREADSHEET_ID = '1R05n3t2cgmzX-z58b9Sgx4He9k9Y9NAm9myQXbEwv3Q';
 
 /** Definición de tablas (hoja, PK, columnas). Coincidir con src/Config/tables.js */
 var TABLAS = {
+  CLIENTES: {
+    sheet: 'CLIENTES',
+    pk: 'ID-CLIENTE',
+    columns: ['ID-CLIENTE', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'WHATSAPP', 'OBSERVACION', 'HABILITADO']
+  },
   PRODUCTOS: {
     sheet: 'PRODUCTOS',
     pk: 'ID-PRODUCTO',
-    columns: ['ID-PRODUCTO', 'CATEGORIA', 'NOMBRE-PRODUCTO', 'PRECIO', 'HABILITADO']
+    columns: ['ID-PRODUCTO', 'CATEGORIA', 'NOMBRE-PRODUCTO', 'PRECIO-MAYORISTA', 'PRECIO-DISTRIBUIDOR', 'HABILITADO']
   },
   ENERO: {
     sheet: 'ENERO',
     pk: 'ID-VENTA',
-    columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO']
+    columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO']
   },
+  FEBRERO: { sheet: 'FEBRERO', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  MARZO: { sheet: 'MARZO', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  ABRIL: { sheet: 'ABRIL', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  MAYO: { sheet: 'MAYO', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  JUNIO: { sheet: 'JUNIO', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  JULIO: { sheet: 'JULIO', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  AGOSTO: { sheet: 'AGOSTO', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  SEPTIEMBRE: { sheet: 'SEPTIEMBRE', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  OCTUBRE: { sheet: 'OCTUBRE', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  NOVIEMBRE: { sheet: 'NOVIEMBRE', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
+  DICIEMBRE: { sheet: 'DICIEMBRE', pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] },
   RESUMEN_VENTAS: {
     sheet: 'RESUMEN-VENTAS',
     pk: 'MES',
@@ -41,6 +58,10 @@ function doPost(e) {
     var accion = params.accion || '';
 
     switch (accion) {
+      case 'clienteAlta':       return clienteAlta(params);
+      case 'clienteBaja':       return clienteBaja(params);
+      case 'clienteModificacion': return clienteModificacion(params);
+      case 'clienteLeer':      return clienteLeer(params);
       case 'productoAlta':       return productoAlta(params);
       case 'productoBaja':       return productoBaja(params);
       case 'productoModificacion': return productoModificacion(params);
@@ -125,6 +146,73 @@ function objetoAFila(def, obj) {
   return fila;
 }
 
+// --- CLIENTES ---
+
+function clienteAlta(params) {
+  var def = TABLAS.CLIENTES;
+  var dato = params.dato || params;
+  if (!dato[def.pk]) return respuestaJson({ ok: false, error: 'Falta ' + def.pk });
+  var ss = getSS();
+  var sheet = getHoja(ss, def.sheet, def.columns);
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, def.columns.length).setValues([def.columns]);
+    sheet.getRange(1, 1, 1, def.columns.length).setFontWeight('bold');
+  }
+  var fila = objetoAFila(def, dato);
+  var rowNum = buscarFilaPorPK(sheet, def, dato[def.pk]);
+  if (rowNum > 0) return respuestaJson({ ok: false, error: 'Ya existe un cliente con ese ' + def.pk });
+  sheet.appendRow(fila);
+  return respuestaJson({ ok: true, mensaje: 'Cliente dado de alta.' });
+}
+
+function clienteBaja(params) {
+  var def = TABLAS.CLIENTES;
+  var pkValor = params[def.pk] || params.id;
+  if (!pkValor) return respuestaJson({ ok: false, error: 'Falta ' + def.pk });
+  var ss = getSS();
+  var sheet = ss.getSheetByName(def.sheet);
+  if (!sheet) return respuestaJson({ ok: false, error: 'No existe la hoja ' + def.sheet });
+  var rowNum = buscarFilaPorPK(sheet, def, pkValor);
+  if (rowNum === -1) return respuestaJson({ ok: false, error: 'No encontrado.' });
+  sheet.deleteRow(rowNum);
+  return respuestaJson({ ok: true, mensaje: 'Cliente dado de baja.' });
+}
+
+function clienteModificacion(params) {
+  var def = TABLAS.CLIENTES;
+  var dato = params.dato || params;
+  if (!dato[def.pk]) return respuestaJson({ ok: false, error: 'Falta ' + def.pk });
+  var ss = getSS();
+  var sheet = ss.getSheetByName(def.sheet);
+  if (!sheet) return respuestaJson({ ok: false, error: 'No existe la hoja ' + def.sheet });
+  var rowNum = buscarFilaPorPK(sheet, def, dato[def.pk]);
+  if (rowNum === -1) return respuestaJson({ ok: false, error: 'No encontrado.' });
+  var fila = objetoAFila(def, dato);
+  sheet.getRange(rowNum, 1, rowNum, def.columns.length).setValues([fila]);
+  return respuestaJson({ ok: true, mensaje: 'Cliente actualizado.' });
+}
+
+function clienteLeer(params) {
+  var def = TABLAS.CLIENTES;
+  var ss = getSS();
+  var sheet = ss.getSheetByName(def.sheet);
+  if (!sheet) return respuestaJson({ ok: true, datos: [] });
+  var datos = sheet.getDataRange().getValues();
+  if (datos.length < 2) return respuestaJson({ ok: true, datos: [] });
+  var headers = datos[0];
+  var filas = [];
+  for (var i = 1; i < datos.length; i++) {
+    var obj = {};
+    for (var c = 0; c < headers.length; c++) obj[headers[c]] = datos[i][c];
+    filas.push(obj);
+  }
+  var id = params[def.pk] || params.id;
+  if (id) {
+    filas = filas.filter(function (f) { return String(f[def.pk]) === String(id); });
+  }
+  return respuestaJson({ ok: true, datos: filas });
+}
+
 // --- PRODUCTOS ---
 
 function productoAlta(params) {
@@ -194,12 +282,16 @@ function productoLeer(params) {
 
 // --- VENTAS (ENERO y futuras hojas por mes) ---
 
+var COLUMNAS_VENTAS = ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'NOMBRE-APELLIDO', 'TIPO-LISTA-PRECIO', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'];
+
 function ventaAlta(params) {
   var hojaNombre = params.hoja || 'ENERO';
-  var def = TABLAS[hojaNombre] || { sheet: hojaNombre, pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] };
+  var def = TABLAS[hojaNombre] || { sheet: hojaNombre, pk: 'ID-VENTA', columns: COLUMNAS_VENTAS };
   var idVenta = params.idVenta || '';
   var fechaOperativa = params.fechaOperativa || '';
   var hora = params.hora || '';
+  var nombreApellido = params.nombreApellido || params['NOMBRE-APELLIDO'] || '';
+  var tipoListaPrecio = params.tipoListaPrecio || params['TIPO-LISTA-PRECIO'] || '';
   var items = params.items || [];
   if (!idVenta || !items.length) return respuestaJson({ ok: false, error: 'Falta idVenta o items.' });
   var anio = new Date().getFullYear();
@@ -217,6 +309,8 @@ function ventaAlta(params) {
       anio,
       fechaOperativa,
       hora,
+      nombreApellido,
+      tipoListaPrecio,
       it.idProducto || '',
       it.categoria || '',
       it.producto || '',
@@ -227,7 +321,7 @@ function ventaAlta(params) {
   }
   if (filas.length === 0) return respuestaJson({ ok: true, mensaje: 'Sin ítems.' });
   var startRow = sheet.getLastRow() + 1;
-  sheet.getRange(startRow, 1, filas.length, def.columns.length).setValues(filas);
+  sheet.getRange(startRow, 1, startRow + filas.length - 1, def.columns.length).setValues(filas);
   return respuestaJson({ ok: true, mensaje: 'Venta guardada.' });
 }
 
@@ -256,7 +350,7 @@ function ventaModificacion(params) {
   var idVenta = params.idVenta || params['ID-VENTA'];
   var items = params.items || [];
   if (!idVenta) return respuestaJson({ ok: false, error: 'Falta idVenta.' });
-  var def = TABLAS[hojaNombre] || { sheet: hojaNombre, pk: 'ID-VENTA', columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] };
+  var def = TABLAS[hojaNombre] || { sheet: hojaNombre, pk: 'ID-VENTA', columns: COLUMNAS_VENTAS };
   var ss = getSS();
   var sheet = ss.getSheetByName(def.sheet);
   if (!sheet) return respuestaJson({ ok: false, error: 'No existe la hoja ' + def.sheet });
@@ -264,17 +358,25 @@ function ventaModificacion(params) {
   var headers = datos[0];
   var colIdx = headers.indexOf('ID-VENTA');
   var colAnio = headers.indexOf('AÑO');
+  var colNombre = headers.indexOf('NOMBRE-APELLIDO');
+  var colTipoLista = headers.indexOf('TIPO-LISTA-PRECIO');
   if (colIdx === -1) return respuestaJson({ ok: false, error: 'Columna ID-VENTA no encontrada.' });
+  var nombreApellido = params.nombreApellido || params['NOMBRE-APELLIDO'];
+  var tipoListaPrecio = params.tipoListaPrecio || params['TIPO-LISTA-PRECIO'];
   var filasActualizadas = 0;
   for (var i = 1; i < datos.length; i++) {
     if (String(datos[i][colIdx]) === String(idVenta) && items[filasActualizadas]) {
       var it = items[filasActualizadas];
       var anio = colAnio >= 0 ? datos[i][colAnio] : new Date().getFullYear();
+      var nom = nombreApellido !== undefined ? nombreApellido : (colNombre >= 0 ? datos[i][colNombre] : '');
+      var tipo = tipoListaPrecio !== undefined ? tipoListaPrecio : (colTipoLista >= 0 ? datos[i][colTipoLista] : '');
       var fila = [
         idVenta,
         anio,
         it.fechaOperativa !== undefined ? it.fechaOperativa : (headers.indexOf('FECHA_OPERATIVA') >= 0 ? datos[i][headers.indexOf('FECHA_OPERATIVA')] : ''),
         it.hora !== undefined ? it.hora : (headers.indexOf('HORA') >= 0 ? datos[i][headers.indexOf('HORA')] : ''),
+        nom,
+        tipo,
         it.idProducto !== undefined ? it.idProducto : (headers.indexOf('ID-PRODUCTO') >= 0 ? datos[i][headers.indexOf('ID-PRODUCTO')] : ''),
         it.categoria !== undefined ? it.categoria : (headers.indexOf('CATEGORIA') >= 0 ? datos[i][headers.indexOf('CATEGORIA')] : ''),
         it.producto !== undefined ? it.producto : (headers.indexOf('PRODUCTO') >= 0 ? datos[i][headers.indexOf('PRODUCTO')] : ''),
@@ -292,7 +394,7 @@ function ventaModificacion(params) {
 function ventaLeer(params) {
   var hojaNombre = params.hoja || 'ENERO';
   var idVenta = params.idVenta || params['ID-VENTA'];
-  var def = TABLAS[hojaNombre] || { sheet: hojaNombre, columns: ['ID-VENTA', 'AÑO', 'FECHA_OPERATIVA', 'HORA', 'ID-PRODUCTO', 'CATEGORIA', 'PRODUCTO', 'CANTIDAD', 'PRECIO', 'MONTO'] };
+  var def = TABLAS[hojaNombre] || { sheet: hojaNombre, columns: COLUMNAS_VENTAS };
   var ss = getSS();
   var sheet = ss.getSheetByName(def.sheet);
   if (!sheet) return respuestaJson({ ok: true, datos: [] });

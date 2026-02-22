@@ -225,6 +225,30 @@
   pointer-events: none;
 }
 
+.nueva-venta__cliente {
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+
+.nueva-venta__cliente label {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-right: 0.25rem;
+}
+
+.nueva-venta__input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  min-width: 180px;
+}
+
 .nueva-venta__guardar {
   margin-top: 1rem;
   display: flex;

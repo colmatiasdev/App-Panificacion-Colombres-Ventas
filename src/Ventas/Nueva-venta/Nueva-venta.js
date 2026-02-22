@@ -26,49 +26,116 @@
     return filas;
   }
 
+  function normalizarProductos(filas) {
+    var cols = TABLA.columns;
+    return filas
+      .filter(function (f) {
+        var hab = (f['HABILITADO'] || '').toUpperCase();
+        return hab === 'SI';
+      })
+      .map(function (f) {
+        var p = {};
+        cols.forEach(function (c) {
+          if (c === 'PRECIO-MAYORISTA' || c === 'PRECIO-DISTRIBUIDOR') {
+            p[c] = Number(f[c]) || 0;
+          } else {
+            p[c] = (f[c] || '');
+          }
+        });
+        p.PRECIO = Number(f['PRECIO-MAYORISTA']) || Number(f['PRECIO-DISTRIBUIDOR']) || 0;
+        return p;
+      });
+  }
+
+  function llenarSelectCategoria() {
+    var selectCat = document.getElementById('nueva-venta-categoria');
+    if (!selectCat) return;
+    // Vaciar opciones y dejar solo "Todas"
+    selectCat.innerHTML = '<option value="">Todas</option>';
+    // Categorías únicas de la columna CATEGORIA de PRODUCTOS
+    var categorias = [];
+    productos.forEach(function (p) {
+      var cat = (p.CATEGORIA || '').trim();
+      if (cat && categorias.indexOf(cat) === -1) categorias.push(cat);
+    });
+    categorias.sort();
+    categorias.forEach(function (cat) {
+      var opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      selectCat.appendChild(opt);
+    });
+  }
+
   function cargarProductos() {
     var mensaje = document.getElementById('nueva-venta-mensaje');
-    var lista = document.getElementById('nueva-venta-productos');
-    var selectCat = document.getElementById('nueva-venta-categoria');
-    if (!CSV_URL || !TABLA) {
-      mensaje.textContent = 'Falta configurar Config o Tables.';
+    if (!TABLA) {
+      mensaje.textContent = 'Falta configurar Tables (PRODUCTOS).';
+      return;
+    }
+
+    function aplicarProductosYFiltro(filas) {
+      productos = normalizarProductos(filas);
+      mensaje.textContent = '';
+      llenarSelectCategoria();
+      pintarListado();
+    }
+
+    // Preferir Apps Script (tabla PRODUCTOS) para tener la columna CATEGORIA correcta
+    if (APP_SCRIPT_URL) {
+      var payload = { accion: 'productoLeer' };
+      var bodyForm = 'data=' + encodeURIComponent(JSON.stringify(payload));
+      var url = (CORS_PROXY && CORS_PROXY.length) ? CORS_PROXY + encodeURIComponent(APP_SCRIPT_URL) : APP_SCRIPT_URL;
+      fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: bodyForm
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          var ct = res.headers.get('Content-Type') || '';
+          if (ct.indexOf('json') !== -1) return res.json();
+          return res.text().then(function (t) {
+            try { return JSON.parse(t); } catch (e) { return { ok: false, datos: [] }; }
+          });
+        })
+        .then(function (data) {
+          if (data && data.ok && Array.isArray(data.datos)) {
+            aplicarProductosYFiltro(data.datos);
+          } else {
+            throw new Error(data && data.error ? data.error : 'Sin datos');
+          }
+        })
+        .catch(function () {
+          if (CSV_URL) cargarProductosCSV(aplicarProductosYFiltro);
+          else mensaje.textContent = 'No se pudieron cargar los productos. Revisa APP_SCRIPT_URL o GOOGLE_SHEET_CSV_URL.';
+        });
+      return;
+    }
+
+    if (CSV_URL) {
+      cargarProductosCSV(aplicarProductosYFiltro);
+    } else {
+      mensaje.textContent = 'Configura APP_SCRIPT_URL o GOOGLE_SHEET_CSV_URL en config.js.';
+    }
+  }
+
+  function cargarProductosCSV(callback) {
+    var mensaje = document.getElementById('nueva-venta-mensaje');
+    if (!CSV_URL) {
+      if (callback) callback([]);
       return;
     }
     fetch(CSV_URL)
       .then(function (res) { return res.text(); })
       .then(function (csv) {
         var filas = parseCSV(csv);
-        var cols = TABLA.columns;
-        productos = filas
-          .filter(function (f) {
-            var hab = (f[TABLA.columns[4]] || '').toUpperCase();
-            return hab === 'SI';
-          })
-          .map(function (f) {
-            var p = {};
-            cols.forEach(function (c) {
-              p[c] = c === 'PRECIO' ? Number(f[c]) || 0 : (f[c] || '');
-            });
-            return p;
-          });
-        mensaje.textContent = '';
-        var categorias = [];
-        productos.forEach(function (p) {
-          if (p.CATEGORIA && categorias.indexOf(p.CATEGORIA) === -1) {
-            categorias.push(p.CATEGORIA);
-          }
-        });
-        categorias.sort();
-        categorias.forEach(function (cat) {
-          var opt = document.createElement('option');
-          opt.value = cat;
-          opt.textContent = cat;
-          selectCat.appendChild(opt);
-        });
-        pintarListado();
+        callback(filas);
       })
       .catch(function () {
         mensaje.textContent = 'No se pudieron cargar los productos. Revisa la URL del Sheet.';
+        if (callback) callback([]);
       });
   }
 
@@ -96,7 +163,7 @@
         li.className = 'nueva-venta__item';
         li.innerHTML =
           '<span class="nueva-venta__item-nombre">' + escapeHtml(p['NOMBRE-PRODUCTO']) + '</span>' +
-          '<span class="nueva-venta__item-precio">' + formatearPrecio(p.PRECIO) + '</span>' +
+          '<span class="nueva-venta__item-precio">' + formatearPrecio(p.PRECIO || p['PRECIO-MAYORISTA'] || 0) + '</span>' +
           '<button type="button" class="nueva-venta__btn-add" data-id="' + escapeHtml(p[TABLA.pk]) + '">Agregar</button>';
         li.querySelector('.nueva-venta__btn-add').addEventListener('click', function () {
           agregarAlCarrito(p);
@@ -235,12 +302,18 @@
     var ahora = new Date();
     var hora = ahora.getHours() + ':' + (ahora.getMinutes() < 10 ? '0' : '') + ahora.getMinutes();
     var idVenta = 'V-' + Date.now();
+    var clienteEl = document.getElementById('nueva-venta-cliente');
+    var tipoListaEl = document.getElementById('nueva-venta-tipo-lista');
+    var nombreApellido = (clienteEl && clienteEl.value) ? clienteEl.value.trim() : '';
+    var tipoListaPrecio = (tipoListaEl && tipoListaEl.value) ? tipoListaEl.value : '';
     var payload = {
       accion: 'guardarVenta',
       hoja: nombreHoja,
       idVenta: idVenta,
       fechaOperativa: fechaOp,
       hora: hora,
+      nombreApellido: nombreApellido,
+      tipoListaPrecio: tipoListaPrecio,
       total: total,
       items: carrito.map(function (item) {
         return {
