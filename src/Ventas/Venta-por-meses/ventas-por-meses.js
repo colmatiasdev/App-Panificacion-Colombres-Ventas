@@ -31,6 +31,8 @@
   var filteredData = [];
   var currentColumnas = [];
   var currentNombreMes = '';
+  var currentPage = 1;
+  var pageSize = 25;
 
   function fmtMoney(n) {
     return '$\u00a0' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -96,9 +98,20 @@
     var tableSearch = document.getElementById('table-search');
     if (tableSearch) {
       tableSearch.addEventListener('input', function () {
+        currentPage = 1;
         renderTable(this.value);
       });
     }
+
+    var pageSizeSelect = document.getElementById('table-page-size');
+    if (pageSizeSelect) {
+      pageSizeSelect.addEventListener('change', function () {
+        pageSize = parseInt(this.value, 10) || 25;
+        currentPage = 1;
+        renderTable(document.getElementById('table-search').value);
+      });
+    }
+
   }
 
   function mostrarMensaje(texto, esError) {
@@ -192,6 +205,9 @@
     });
     thead.appendChild(trHead);
 
+    currentPage = 1;
+    var pageSizeEl = document.getElementById('table-page-size');
+    if (pageSizeEl) pageSize = parseInt(pageSizeEl.value, 10) || 25;
     renderTable('', currentNombreMes, currentColumnas);
     wrapper.hidden = false;
   }
@@ -199,6 +215,9 @@
   function renderTable(searchTerm, nombreMes, columnas) {
     var tbody = document.getElementById('ventas-meses-tbody');
     var footer = document.getElementById('table-footer');
+    var pagination = document.getElementById('table-pagination');
+    var paginationInfo = document.getElementById('table-pagination-info');
+    var paginationPages = document.getElementById('table-pagination-pages');
     if (!tbody || !footer) return;
 
     var s = (searchTerm || '').toLowerCase().trim();
@@ -213,8 +232,18 @@
     if (!columnas) columnas = currentColumnas.length ? currentColumnas : columnasTabla;
     if (!nombreMes) nombreMes = currentNombreMes;
 
+    var totalFilt = filteredData.reduce(function (s, r) {
+      return s + (parseFloat(r.MONTO) || 0);
+    }, 0);
+
+    var totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+    var start = (currentPage - 1) * pageSize;
+    var end = Math.min(start + pageSize, filteredData.length);
+    var pageData = filteredData.slice(start, end);
+
     tbody.innerHTML = '';
-    filteredData.forEach(function (fila) {
+    pageData.forEach(function (fila) {
       var tr = document.createElement('tr');
       columnas.forEach(function (col) {
         var td = document.createElement('td');
@@ -248,12 +277,37 @@
       tbody.appendChild(tr);
     });
 
-    var totalFilt = filteredData.reduce(function (s, r) {
-      return s + (parseFloat(r.MONTO) || 0);
-    }, 0);
     footer.innerHTML =
-      '<span>Mostrando <strong>' + filteredData.length + '</strong> de ' + allData.length + ' registros</span>' +
-      '<span>Subtotal filtrado: <strong>' + fmtMoney(totalFilt) + '</strong></span>';
+      '<span>Mostrando <strong>' + (filteredData.length ? start + 1 : 0) + '-' + end + '</strong> de ' + filteredData.length + ' registros' +
+      (allData.length !== filteredData.length ? ' (filtrado de ' + allData.length + ')' : '') + '</span>' +
+      '<span>Subtotal: <strong>' + fmtMoney(totalFilt) + '</strong></span>';
+
+    if (pagination && paginationInfo && paginationPages) {
+      var firstBtn = document.getElementById('table-pagination-first');
+      var prevBtn = document.getElementById('table-pagination-prev');
+      var nextBtn = document.getElementById('table-pagination-next');
+      var lastBtn = document.getElementById('table-pagination-last');
+
+      paginationInfo.textContent = 'Página ' + currentPage + ' de ' + totalPages;
+      paginationPages.textContent = currentPage + ' / ' + totalPages;
+
+      if (firstBtn) {
+        firstBtn.disabled = currentPage <= 1;
+        firstBtn.onclick = function () { currentPage = 1; renderTable(document.getElementById('table-search').value); };
+      }
+      if (prevBtn) {
+        prevBtn.disabled = currentPage <= 1;
+        prevBtn.onclick = function () { currentPage = currentPage - 1; renderTable(document.getElementById('table-search').value); };
+      }
+      if (nextBtn) {
+        nextBtn.disabled = currentPage >= totalPages;
+        nextBtn.onclick = function () { currentPage = currentPage + 1; renderTable(document.getElementById('table-search').value); };
+      }
+      if (lastBtn) {
+        lastBtn.disabled = currentPage >= totalPages;
+        lastBtn.onclick = function () { currentPage = totalPages; renderTable(document.getElementById('table-search').value); };
+      }
+    }
   }
 
   function ocultarTabla() {

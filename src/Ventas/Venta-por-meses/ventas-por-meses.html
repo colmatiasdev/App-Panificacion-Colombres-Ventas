@@ -50,7 +50,15 @@
     <div class="table-section ventas-meses__tabla-wrapper" id="ventas-meses-tabla-wrapper" hidden>
       <div class="table-header">
         <div class="table-header-title" id="ventas-meses-subtitulo">Detalle de ventas</div>
-        <input type="search" class="table-search" id="table-search" placeholder="🔍 Buscar…">
+        <div class="table-header-actions">
+          <label for="table-page-size" class="table-page-size-label">Registros por página</label>
+          <select id="table-page-size" class="table-page-size-select" aria-label="Registros por página">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+          </select>
+          <input type="search" class="table-search" id="table-search" placeholder="🔍 Buscar…">
+        </div>
       </div>
       <div class="table-scroll">
         <table>
@@ -59,6 +67,16 @@
         </table>
       </div>
       <div class="table-footer" id="table-footer"></div>
+      <div class="table-pagination" id="table-pagination">
+        <span class="table-pagination-info" id="table-pagination-info"></span>
+        <div class="table-pagination-controls">
+          <button type="button" class="table-pagination-btn" id="table-pagination-first" aria-label="Primera página">«</button>
+          <button type="button" class="table-pagination-btn" id="table-pagination-prev" aria-label="Anterior">‹</button>
+          <span class="table-pagination-pages" id="table-pagination-pages"></span>
+          <button type="button" class="table-pagination-btn" id="table-pagination-next" aria-label="Siguiente">›</button>
+          <button type="button" class="table-pagination-btn" id="table-pagination-last" aria-label="Última página">»</button>
+        </div>
+      </div>
     </div>
   </main>
 
